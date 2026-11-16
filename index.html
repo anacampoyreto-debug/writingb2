@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ana · Writing Studio B2</title>
+<style>
+:root{--bg:#f5f3ee;--paper:#fff;--ink:#253d39;--muted:#596d67;
+--line:#dce4dd;--accent:#235b48;--soft:#eaf1e8;--orange:#a24d1d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:16px/1.6 system-ui,sans-serif}
+header{background:var(--ink);color:white;padding:30px max(22px,calc((100% - 1180px)/2))}
+header small{color:#c9d9cc;letter-spacing:2px}
+h1{font:clamp(30px,5vw,46px)/1.15 Georgia,serif;margin:12px 0}
+header p{margin:0;color:#dde6df}
+main{max-width:1224px;margin:auto;padding:26px 22px}
+.toolbar,nav,.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.toolbar{justify-content:space-between;margin-bottom:20px}
+button,select,.file{font:inherit;border:1px solid #c3cec5;
+background:white;color:var(--ink);border-radius:10px;padding:10px 15px;
+cursor:pointer;min-height:44px}
+button:hover,.file:hover{background:var(--soft)}
+button.primary,button[aria-current="step"]{background:var(--accent);color:white;border-color:var(--accent)}
+button:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,
+.file:focus-within{outline:3px solid #d49141;outline-offset:3px}
+nav{margin:20px 0}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.card{background:var(--paper);border:1px solid var(--line);
+border-radius:18px;padding:26px;margin-bottom:20px}
+h2{font:29px/1.2 Georgia,serif;margin:0 0 12px}
+h3{font-size:18px;margin:22px 0 8px}
+p{margin:10px 0}
+.muted,small{color:var(--muted)}
+.tag{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--accent)}
+.prompt{background:var(--soft);padding:16px 18px;border-radius:12px;
+white-space:pre-wrap;margin:16px 0}
+label.question{display:block;font-weight:600;margin:20px 0 8px}
+textarea{display:block;width:100%;min-height:150px;padding:15px;
+border:1px solid #b8c7bc;border-radius:12px;resize:vertical;
+font:17px/1.7 system-ui,sans-serif;color:var(--ink);background:#fff}
+textarea.short{min-height:72px}
+textarea.long{min-height:270px}
+.count{display:flex;justify-content:space-between;gap:8px;
+font-size:13px;color:var(--muted);margin:6px 0 20px;flex-wrap:wrap}
+.warning{color:var(--orange)}
+.good{color:var(--accent)}
+summary{cursor:pointer;font-weight:600;padding:8px 0}
+details+details{border-top:1px solid var(--line);margin-top:12px;padding-top:8px}
+.formula{font:14px/1.6 ui-monospace,monospace;background:var(--soft);
+padding:10px;border-radius:8px;overflow-wrap:anywhere}
+.example{border-left:3px solid #b6cbb7;padding-left:12px}
+aside .card{padding:22px}
+#board{background:#22483d;color:#f4fff0;border-color:#22483d;min-height:180px}
+#board::placeholder{color:#c4d8c9}
+.notice{font-size:14px;background:#ede9dc;padding:15px 18px;border-radius:12px}
+.check{display:block;margin:10px 0;font-size:14px}
+.check input{margin-right:8px}
+.history-entry{border-top:1px solid var(--line);padding:20px 0}
+.history-entry pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;background:var(--soft);padding:14px;border-radius:10px}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+background:var(--ink);color:#fff;padding:12px 22px;border-radius:12px;
+box-shadow:0 5px 25px #0003;max-width:90%;z-index:10}
+[hidden]{display:none!important}
+.file input{position:absolute;width:1px;height:1px;opacity:0}
+footer{font-size:13px;color:var(--muted);margin:25px 0}
+@media(max-width:850px){.layout{grid-template-columns:1fr}aside{display:grid;
+grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px}aside .card{margin:0}}
+@media(max-width:450px){main{padding:18px 12px}.card{padding:20px 16px}
+nav button{flex:1;padding:10px 8px}.toolbar{align-items:stretch}}
+</style>
+</head>
+<body>
+<header>
+<small>TU ESPACIO PERSONAL · OBJETIVO B2</small>
+<h1>Ana’s Writing Studio</h1>
+<p>Una idea, una frase, un paso más.</p>
+</header>
+<main>
+<div class="toolbar">
+<label>Tema:
+<select id="topic">
+<option value="books">Libros · Book Club</option>
+<option value="culture">Cultura · Culture Club</option>
+<option value="camping">Camping · Outdoor Club</option>
+<option value="club">Propuestas · Community Club</option>
+</select>
+</label>
+<div class="actions">
+<button id="practiceBtn" class="primary">Practicar</button>
+<button id="historyBtn">Historial · 0</button>
+</div>
+</div>
+
+<p id="storageStatus" class="muted" role="status"></p>
+
+<section id="practice">
+<nav aria-label="Partes del Writing">
+<button data-part="1">01 · Respuestas</button>
+<button data-part="2">02 · Texto breve</button>
+<button data-part="3">03 · Chat</button>
+<button data-part="4">04 · Dos emails</button>
+</nav>
+<div class="layout">
+<div>
+<section class="card">
+<div class="tag" id="eyebrow"></div>
+<h2 id="title"></h2>
+<p id="instructions"></p>
+<div id="exercise"></div>
+<div class="actions">
+<button class="primary" id="save">Guardar intento en historial</button>
+<button id="clear">Vaciar esta parte</button>
+</div>
+<p class="muted"><small>Tu borrador se guarda al escribir. Guardar un intento crea una copia fechada que podrás consultar después.</small></p>
+</section>
+
+<section class="card">
+<h2>Revisa antes de guardar</h2>
+<p class="muted">Autoevaluación: estas casillas no calculan una nota ni corrigen tu inglés.</p>
+<label class="check"><input type="checkbox">He respondido a todo lo que se pide.</label>
+<label class="check"><input type="checkbox">He revisado tiempos verbales, concordancia y ortografía.</label>
+<label class="check"><input type="checkbox">He respetado la extensión orientativa de esta parte.</label>
+<label class="check"><input type="checkbox">He conectado mis ideas sin repetir siempre las mismas palabras.</label>
+<label class="check"><input type="checkbox">El tono es adecuado para la persona que me lee.</label>
+<p class="notice">Para B2, usa estructuras variadas cuando encajen. En la parte 1, una palabra o frase breve suele bastar: no fuerces frases complejas.</p>
+</section>
+</div>
+
+<aside>
+<section class="card">
+<details id="cheat" open>
+<summary>Chuleta B2 · mostrar / ocultar</summary>
+<p class="muted">Entiende la estructura, ensáyala y oculta la ayuda para recuperarla de memoria.</p>
+<details>
+<summary>Condicionales</summary>
+<p class="formula">If + present, will + verb</p>
+<p class="example" lang="en">If we invite a local writer, more people will join.</p>
+<p>Si invitamos a un escritor local, se apuntará más gente.</p>
+<p class="formula">If + past, would + verb</p>
+<p class="example" lang="en">If I were the organiser, I would offer a cheaper option.</p>
+<p>Si yo organizara la actividad, ofrecería una opción más barata.</p>
+<p class="muted">En estas estructuras, evita «If we would…».</p>
+</details>
+<details>
+<summary>Comparativos</summary>
+<p class="formula">-er / more + adjective + than</p>
+<p class="example" lang="en">Camping is cheaper than staying in a hotel.</p>
+<p>Acampar es más barato que alojarse en un hotel.</p>
+<p class="example" lang="en">A discussion would be more engaging than a lecture.</p>
+<p>Un debate sería más atractivo que una conferencia.</p>
+<p class="formula">not as + adjective + as</p>
+<p class="example" lang="en">The new venue is not as convenient as the old one.</p>
+<p>El nuevo lugar no resulta tan práctico como el anterior.</p>
+</details>
+<details>
+<summary>Superlativos</summary>
+<p class="formula">the + -est / most + adjective</p>
+<p class="example" lang="en">This is the most suitable option for our club.</p>
+<p>Esta es la opción más adecuada para nuestro club.</p>
+<p class="formula">one of the + superlative + plural noun</p>
+<p class="example" lang="en">It was one of the best events I have ever attended.</p>
+<p>Fue uno de los mejores eventos a los que he asistido.</p>
+<p class="muted">Good → better → the best. Evita «the most cheapest».</p>
+</details>
+<details>
+<summary>Would rather</summary>
+<p class="formula">would rather + verb + than + verb</p>
+<p class="example" lang="en">I would rather meet in person than discuss the book online.</p>
+<p>Preferiría reunirnos en persona antes que comentar el libro por internet.</p>
+<p class="formula">would rather not + verb</p>
+<p class="example" lang="en">I would rather not cancel the trip.</p>
+<p>Preferiría no cancelar la excursión.</p>
+<p class="muted">Después de «would rather» no pongas «to» ni «-ing».</p>
+</details>
+<details>
+<summary>Conectores y tono</summary>
+<p lang="en"><b>However</b> · sin embargo<br><b>Moreover</b> · además<br>
+<b>Although</b> · aunque<br><b>As a result</b> · como resultado</p>
+<p class="example" lang="en">Although the venue is smaller, it is easier to reach.</p>
+<p lang="en"><b>Informal:</b> Hi Sam, / How about…? / See you soon,</p>
+<p lang="en"><b>Formal:</b> Dear Club Manager, / I am writing to… /
+I would appreciate it if you could… / Yours faithfully,</p>
+<p class="muted">Si conoces el apellido del destinatario: «Dear Ms Brown» y «Yours sincerely».</p>
+</details>
+</details>
+</section>
+
+<section class="card">
+<h3 style="margin-top:0">Mini pizarra</h3>
+<p class="muted">Ensaya una estructura sin modificar tu respuesta.</p>
+<label for="board">Tu ensayo</label>
+<textarea id="board" placeholder="If I were the organiser, I would…"></textarea>
+<div class="actions" style="margin-top:12px">
+<button id="eraseBoard">Borrar pizarra</button>
+</div>
+<p><small>La pizarra es temporal: se borra al recargar. No forma parte del historial.</small></p>
+</section>
+</aside>
+</div>
+</section>
+
+<section id="history" hidden class="card">
+<div class="toolbar">
+<div><div class="tag">TU RECORRIDO</div><h2>Historial de respuestas</h2></div>
+<button id="back">Volver a practicar</button>
+</div>
+<p>Los intentos se ordenan del más reciente al más antiguo. Puedes abrirlos, recuperarlos como borrador o eliminarlos individualmente.</p>
+<div class="actions">
+<button id="export">Exportar copia de seguridad</button>
+<label class="file">Importar copia
+<input type="file" id="import" accept=".json,application/json">
+</label>
+</div>
+<p class="notice">Las respuestas y los borradores se guardan solo en este navegador, perfil y dispositivo mediante almacenamiento local. No se sincronizan aunque uses la misma cuenta. Si borras los datos del navegador o usas navegación privada, puedes perderlos. Para cambiarlos de dispositivo, exporta aquí e importa el archivo allí.</p>
+<div id="entries"></div>
+</section>
+<footer>
+Material de práctica independiente, sin afiliación al British Council.
+<a href="https://www.britishcouncil.org/exam/english/aptis/prepare-general"
+target="_blank" rel="noopener">Consultar formato oficial</a>.
+El contador es orientativo y cuenta palabras separadas por espacios.
+</footer>
+</main>
+<div id="toast" role="status" hidden></div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const KEY="ana-aptis-writing-v1";
+const topics={
+books:{
+ name:"Book Club",es:"Libros",
+ intro:"You have joined a book club. Complete your member profile.",
+ p1:["What is your first name?","Where do you live?","What is your favourite kind of book?","When do you usually read?","Where do you buy or borrow books?"],
+ p2:"Tell the club about a book you enjoyed and explain why you would recommend it.",
+ p3:[
+ ["Alex","Do you prefer printed books or e-books? Why?"],
+ ["Jamie","Tell us about a time you discussed a book with someone. What did you learn?"],
+ ["Robin","Some people say reading fiction is a waste of time. What do you think?"]],
+ notice:"Dear members,\nOur guest author cannot attend next Saturday's meeting. We can either hold an online discussion with the author next month or organise a members' book exchange this Saturday. Please share your views with the club manager.",
+ friend:"Write an email to your friend Sam, who is also a member. Say how you feel about the news and which option you prefer.",
+ formal:"Write an email to the club manager. Explain your reaction, compare the two options and recommend what the club should do."
+},
+culture:{
+ name:"Culture Club",es:"Actividades culturales",
+ intro:"You have joined a culture club. Complete your member profile.",
+ p1:["What is your first name?","Which city do you live in?","What is your favourite cultural activity?","Which day are you free?","Who do you usually visit museums with?"],
+ p2:"Describe a cultural event you attended and explain what made it memorable.",
+ p3:[
+ ["Alex","Would you rather visit a museum alone or with other people? Why?"],
+ ["Jamie","Tell us about a cultural activity you tried for the first time."],
+ ["Robin","Should museums be free for everyone? Explain your opinion."]],
+ notice:"Dear members,\nThe theatre has cancelled our group visit. We can arrange a guided museum tour on the same evening for £12 per person, or attend a local music festival the following weekend for £20. Please send your suggestions to the club manager.",
+ friend:"Write an email to your friend Sam. Explain how you feel about the cancellation and suggest which alternative you could attend together.",
+ formal:"Write an email to the club manager. Explain the effect of the cancellation, discuss the alternatives and make a recommendation."
+},
+camping:{
+ name:"Outdoor Club",es:"Camping",
+ intro:"You have joined an outdoor club. Complete your member profile.",
+ p1:["What is your first name?","Where do you live?","What is your favourite outdoor activity?","Which season do you prefer for camping?","How do you usually travel to the countryside?"],
+ p2:"Describe your experience of outdoor activities and explain why you want to join the club.",
+ p3:[
+ ["Alex","Do you prefer camping near the coast or in the mountains? Why?"],
+ ["Jamie","Describe an outdoor trip when something unexpected happened."],
+ ["Robin","How can camping clubs protect the places they visit?"]],
+ notice:"Dear members,\nHeavy rain is forecast for our camping weekend. We can move the trip to next month at no extra cost or stay in indoor cabins this weekend for an additional £25 per person. Please tell the club manager which option you support.",
+ friend:"Write an email to your friend Sam. Say how you feel about the news and explain what you would rather do.",
+ formal:"Write an email to the club manager. Explain your concerns, compare the options and propose a suitable solution for members."
+},
+club:{
+ name:"Community Club",es:"Propuestas para un club",
+ intro:"You have joined a community club. Complete your member profile.",
+ p1:["What is your first name?","Which neighbourhood do you live in?","What is your main hobby?","When are you available to volunteer?","What activity would you like the club to offer?"],
+ p2:"Explain what skills you could share with other members and suggest an activity you could help organise.",
+ p3:[
+ ["Alex","What makes a club welcoming to new members?"],
+ ["Jamie","Tell us about an activity you helped organise. How did it go?"],
+ ["Robin","Should our club spend more money on equipment or on events? Why?"]],
+ notice:"Dear members,\nOur club has received £500 to attract new members. We could buy equipment for weekly workshops or organise a free open day with activities for local residents. We would welcome other affordable ideas. Please write to the club manager with your suggestions.",
+ friend:"Write an email to your friend Sam. Explain your reaction to the news and suggest an activity you could organise together.",
+ formal:"Write an email to the club manager. Compare the proposed uses of the money, recommend a plan and explain how it would attract new members."
+}};
+const info={
+1:["Respuestas breves","Responde a las cinco preguntas con palabras o frases breves. Prioriza la precisión; aquí no necesitas demostrar todas las estructuras B2."],
+2:["Un texto breve","Escribe entre 20 y 30 palabras. Responde directamente a la petición con frases completas y bien conectadas."],
+3:["Conversación en el club","Responde por separado a los tres miembros: unas 40 palabras por mensaje. Añade una razón, un ejemplo o una experiencia cuando corresponda."],
+4:["Una noticia, dos emails","Lee el aviso y escribe dos correos sobre la misma situación. Cambia el registro: informal para tu amigo y formal para la persona responsable."]
+};
+let state={drafts:{},history:[]},part=1,topic="books",storageOK=true;
+function validate(data){
+ if(!data||data.version!==1||!data.drafts||typeof data.drafts!=="object"||
+ Array.isArray(data.drafts)||!Array.isArray(data.history))throw Error("Formato");
+ const drafts={};
+ for(const [key,values] of Object.entries(data.drafts)){
+  const m=key.match(/^(books|culture|camping|club):([1-4])$/);
+  if(!m||!validAnswers(values,Number(m[2])))throw Error("Borrador");
+  drafts[key]=values;
+ }
+ const seen=new Set();
+ const history=data.history.map(h=>{
+  if(!h||typeof h.id!=="string"||!h.id||seen.has(h.id)||
+  !Object.hasOwn(topics,h.topic)||![1,2,3,4].includes(h.part)||
+  !validAnswers(h.answers,h.part)||typeof h.date!=="string"||
+  !Number.isFinite(Date.parse(h.date))||
+  !Array.isArray(h.prompts)||h.prompts.length!==h.answers.length||
+  !h.prompts.every(x=>typeof x==="string"&&x.length<10000))throw Error("Intento");
+  seen.add(h.id);
+  return {id:h.id,topic:h.topic,part:h.part,answers:h.answers,
+   date:h.date,prompts:h.prompts};
+ });
+ return {drafts,history};
+}
+function validAnswers(a,p){
+ return Array.isArray(a)&&a.length===({1:5,2:1,3:3,4:2}[p])&&
+ a.every(x=>typeof x==="string"&&x.length<=50000);
+}
+try{
+ const raw=localStorage.getItem(KEY);
+ if(raw)state=validate(JSON.parse(raw));
+}catch(e){
+ storageOK=false;
+}
+function status(){
+ $("storageStatus").textContent=storageOK?
+ "● Borradores e historial guardados en este navegador. Sin sincronización entre dispositivos.":
+ "⚠ No se ha podido leer o guardar el almacenamiento local. Exporta tus respuestas antes de cerrar.";
+}
+function persist(){
+ try{
+ localStorage.setItem(KEY,JSON.stringify({version:1,...state}));
+ storageOK=true;
+ }catch(e){storageOK=false}
+ status();updateBadge();
+}
+function toast(text){
+ $("toast").textContent=text;$("toast").hidden=false;
+ clearTimeout(toast.timer);
+ toast.timer=setTimeout(()=>$("toast").hidden=true,4500);
+}
+function count(text){return text.trim()?text.trim().split(/\s+/u).length:0}
+function key(){return topic+":"+part}
+function tasks(){
+ const t=topics[topic];
+ if(part===1)return t.p1.map(p=>({prompt:p,type:"brief"}));
+ if(part===2)return [{prompt:t.p2,min:20,max:30}];
+ if(part===3)return t.p3.map(([name,prompt])=>({prompt:name+": "+prompt,type:"around"}));
+ return [{prompt:t.friend,min:40,max:50},{prompt:t.formal,min:120,max:150}];
+}
+function readAnswers(){
+ return Array.from($("exercise").querySelectorAll("textarea")).map(x=>x.value);
+}
+function saveDraft(){state.drafts[key()]=readAnswers();persist()}
+function element(tag,text,className){
+ const el=document.createElement(tag);
+ if(text!==undefined)el.textContent=text;
+ if(className)el.className=className;
+ return el;
+}
+function updateCount(area,el,task){
+ const n=count(area.value);
+ let guidance="";
+ el.className="count";
+ if(task.type==="brief")guidance="Palabra o frase breve";
+ else if(task.type==="around")guidance="Objetivo: unas 40 palabras";
+ else{
+  guidance=task.min+"–"+task.max+" palabras";
+  if(n>task.max){guidance+=" · Revisa la extensión";el.classList.add("warning")}
+  else if(n>=task.min){guidance+=" · Dentro del rango";el.classList.add("good")}
+  else if(n){guidance+=" · Desarrolla un poco más";}
+ }
+ el.replaceChildren(element("span",n+" palabras"),element("span",guidance));
+}
+function render(){
+ $("topic").value=topic;
+ $("eyebrow").textContent=topics[topic].name+" · Parte "+part+" de 4";
+ $("title").textContent=info[part][0];
+ $("instructions").textContent=info[part][1];
+ document.querySelectorAll("[data-part]").forEach(b=>{
+  if(Number(b.dataset.part)===part)b.setAttribute("aria-current","step");
+  else b.removeAttribute("aria-current");
+ });
+ const box=$("exercise");box.replaceChildren();
+ if(part===1||part===4){
+  const notice=element("div",part===1?topics[topic].intro:topics[topic].notice,"prompt");
+  notice.lang="en";box.append(notice);
+ }
+ const values=state.drafts[key()]||[];
+ tasks().forEach((task,i)=>{
+  const label=element("label",task.prompt,"question");
+  label.htmlFor="answer-"+i;label.lang="en";
+  const area=element("textarea");
+  area.id="answer-"+i;area.lang="en";area.spellcheck=true;
+  area.placeholder="Write your answer here…";
+  area.value=values[i]||"";
+  if(part===1)area.className="short";
+  if(part===4&&i===1)area.className="long";
+  const counter=element("div",undefined,"count");
+  area.setAttribute("aria-describedby","counter-"+i);
+  counter.id="counter-"+i;
+  updateCount(area,counter,task);
+  area.addEventListener("input",()=>{updateCount(area,counter,task);saveDraft()});
+  box.append(label,area,counter);
+ });
+ document.querySelectorAll(".check input").forEach(x=>x.checked=false);
+ updateBadge();
+}
+function updateBadge(){$("historyBtn").textContent="Historial · "+state.history.length}
+function showPractice(){
+ $("practice").hidden=false;$("history").hidden=true;
+ $("practiceBtn").classList.add("primary");$("historyBtn").classList.remove("primary");
+}
+function showHistory(){
+ $("practice").hidden=true;$("history").hidden=false;
+ $("practiceBtn").classList.remove("primary");$("historyBtn").classList.add("primary");
+ renderHistory();
+}
+function renderHistory(){
+ const box=$("entries");box.replaceChildren();
+ if(!state.history.length){box.append(element("p","Todavía no hay intentos guardados. Escribe una respuesta y pulsa «Guardar intento en historial»."));return}
+ [...state.history].sort((a,b)=>Date.parse(b.date)-Date.parse(a.date)).forEach(h=>{
+  const article=element("article",undefined,"history-entry");
+  article.append(element("h3",topics[h.topic].es+" · Parte "+h.part));
+  article.append(element("p",new Date(h.date).toLocaleString("es-ES"),"muted"));
+  const detail=element("details");
+  detail.append(element("summary","Ver enunciados y respuestas"));
+  h.answers.forEach((a,i)=>{
+   detail.append(element("p",h.prompts[i],"question"));
+   const pre=element("pre",a||"(Sin respuesta)");pre.lang="en";
+   detail.append(pre,element("small",count(a)+" palabras"));
+  });
+  const actions=element("div",undefined,"actions");
+  const restore=element("button","Recuperar como borrador");
+  restore.onclick=()=>{
+   const current=state.drafts[h.topic+":"+h.part];
+   if(current&&current.some(x=>x.trim())&&!confirm("¿Sustituir el borrador actual de esta parte? El intento del historial se conservará."))return;
+   topic=h.topic;part=h.part;state.drafts[key()]=[...h.answers];
+   persist();render();showPractice();toast("Intento recuperado como borrador.");
+  };
+  const remove=element("button","Eliminar intento");
+  remove.onclick=()=>{
+   if(!confirm("¿Eliminar este intento del historial?"))return;
+   state.history=state.history.filter(x=>x.id!==h.id);persist();renderHistory();
+  };
+  actions.append(restore,remove);
+  article.append(detail,actions);box.append(article);
+ });
+}
+document.querySelectorAll("[data-part]").forEach(b=>b.onclick=()=>{
+ part=Number(b.dataset.part);render();
+});
+$("topic").onchange=()=>{topic=$("topic").value;render()};
+$("save").onclick=()=>{
+ const answers=readAnswers();
+ if(!answers.some(x=>x.trim())){toast("Escribe al menos una respuesta antes de guardar.");return}
+ const prompts=tasks().map(x=>(part===4?topics[topic].notice+"\n\n":"")+x.prompt);
+ state.history.push({id:globalThis.crypto?.randomUUID?.()||
+ Date.now()+"-"+Math.random().toString(36).slice(2),
+ date:new Date().toISOString(),topic,part,answers:[...answers],prompts});
+ state.drafts[key()]=answers;persist();
+ toast(storageOK?"Intento guardado en tu historial.":"Intento en memoria. Exporta una copia antes de cerrar.");
+};
+$("clear").onclick=()=>{
+ if(!readAnswers().some(x=>x.trim()))return;
+ if(!confirm("¿Vaciar el borrador de esta parte? Los intentos del historial se conservarán."))return;
+ delete state.drafts[key()];persist();render();
+};
+$("eraseBoard").onclick=()=>{$("board").value="";$("board").focus()};
+$("practiceBtn").onclick=showPractice;
+$("historyBtn").onclick=showHistory;
+$("back").onclick=showPractice;
+$("export").onclick=()=>{
+ const blob=new Blob([JSON.stringify({version:1,...state},null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="ana-aptis-"+new Date().toISOString().slice(0,10)+".json";
+ document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ toast("Copia exportada: incluye borradores e historial.");
+};
+$("import").onchange=async event=>{
+ const file=event.target.files[0];if(!file)return;
+ try{
+  if(file.size>10000000)throw Error("Tamaño");
+  const incoming=validate(JSON.parse(await file.text()));
+  if(!confirm("Se añadirán los intentos que falten y se importarán los borradores de la copia, sustituyendo los que coincidan. ¿Continuar?"))return;
+  const ids=new Set(state.history.map(x=>x.id));
+  state.history.push(...incoming.history.filter(x=>!ids.has(x.id)));
+  state.drafts={...state.drafts,...incoming.drafts};
+  persist();render();renderHistory();
+  toast(storageOK?"Copia importada.":"Copia importada en memoria; no se ha podido guardar en el navegador.");
+ }catch(e){toast("No se pudo importar. Elige una copia JSON exportada desde esta web.")}
+ finally{event.target.value=""}
+};
+status();render();
+</script>
+</body>
+</html>
